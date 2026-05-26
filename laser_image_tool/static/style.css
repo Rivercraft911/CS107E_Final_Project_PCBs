@@ -1,0 +1,350 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #111318;
+  --surface: #1c1f27;
+  --surface2: #252932;
+  --border: #2e3340;
+  --accent: #5b8af0;
+  --accent-hover: #7aa3f8;
+  --text: #e2e6f0;
+  --text-muted: #7c8494;
+  --error: #f07070;
+  --radius: 8px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+header {
+  margin-bottom: 28px;
+}
+
+header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+/* Controls panel */
+.controls-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px 24px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Make the drop zone and render button span full width */
+.control-group:has(#dropzone),
+.render-btn {
+  grid-column: 1 / -1;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+select, input[type="number"] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+  padding: 7px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+select:focus, input[type="number"]:focus {
+  border-color: var(--accent);
+}
+
+/* Drop zone */
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzone.drag-over {
+  border-color: var(--accent);
+  background: rgba(91, 138, 240, 0.06);
+}
+
+.dropzone-prompt {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px;
+}
+
+.drop-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.link {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.dropzone-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  width: 100%;
+}
+
+.dropzone-preview img {
+  max-height: 80px;
+  max-width: 160px;
+  border-radius: 4px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+}
+
+.img-meta {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Custom resolution */
+.custom-res {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-res input {
+  width: 90px;
+}
+
+.custom-res span {
+  color: var(--text-muted);
+}
+
+/* Checkbox group */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Scale slider */
+.scale-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scale-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.scale-val {
+  font-size: 13px;
+  color: var(--text-muted);
+  width: 28px;
+  text-align: right;
+}
+
+/* Render button */
+.render-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 28px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  width: 100%;
+}
+
+.render-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.render-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Error banner */
+.error-banner {
+  background: rgba(240, 112, 112, 0.12);
+  border: 1px solid var(--error);
+  border-radius: var(--radius);
+  color: var(--error);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+/* Spinner */
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.spinner-inner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Results */
+.results {
+  margin-top: 8px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-img-wrap {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  min-height: 120px;
+}
+
+.card-img-wrap img {
+  image-rendering: pixelated;
+  max-width: 100%;
+  max-height: 300px;
+  display: block;
+}
+
+.card-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.card-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.card-label strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.card-downloads {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dl-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.dl-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Utility */
+.hidden { display: none !important; }

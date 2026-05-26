@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laser Image Tool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1>Laser Image Tool</h1>
+      <p class="subtitle">Preview images quantized for the raster laser projector</p>
+    </header>
+
+    <main>
+      <section class="controls-panel">
+
+        <!-- Drop zone -->
+        <div class="control-group">
+          <label class="section-label">Image</label>
+          <div id="dropzone" class="dropzone">
+            <input type="file" id="fileInput" accept="image/*" hidden />
+            <div id="dropzone-prompt" class="dropzone-prompt">
+              <div class="drop-icon">⬆</div>
+              <div>Drop an image or <span class="link" id="browseBtn">click to browse</span></div>
+            </div>
+            <div id="dropzone-preview" class="dropzone-preview hidden">
+              <img id="thumbImg" alt="Preview" />
+              <div id="imgMeta" class="img-meta"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resolution -->
+        <div class="control-group">
+          <label class="section-label" for="resPreset">Resolution</label>
+          <select id="resPreset">
+            <option value="160x120">160 × 120</option>
+            <option value="320x100" selected>320 × 100</option>
+            <option value="128x96">128 × 96</option>
+            <option value="256x144">256 × 144</option>
+            <option value="custom">Custom…</option>
+          </select>
+          <div id="customRes" class="custom-res hidden">
+            <input type="number" id="customW" min="1" max="8192" placeholder="W" value="320" />
+            <span>×</span>
+            <input type="number" id="customH" min="1" max="8192" placeholder="H" value="100" />
+          </div>
+        </div>
+
+        <!-- Color mode -->
+        <div class="control-group">
+          <label class="section-label" for="colorMode">Color Mode</label>
+          <div class="mode-row">
+            <select id="colorMode">
+              <option value="rgb8">rgb8 — 8 colors</option>
+              <option value="rgb9">rgb9 — 9 colors</option>
+              <option value="rgb64">rgb64 — 64 colors</option>
+              <option value="rgb4096">rgb4096 — 4096 colors</option>
+              <option value="all">All modes (compare)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="control-group">
+          <label class="section-label">Options</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="gammaChk" />
+              <span>Gamma-aware (sRGB→linear)</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="ditherChk" />
+              <span>Floyd-Steinberg dither</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Preview scale -->
+        <div class="control-group">
+          <label class="section-label" for="previewScale">Preview Scale</label>
+          <div class="scale-row">
+            <input type="range" id="previewScale" min="1" max="16" value="8" />
+            <span id="scaleVal" class="scale-val">8×</span>
+          </div>
+        </div>
+
+        <!-- Export -->
+        <div class="control-group">
+          <label class="section-label" for="exportMode">Export</label>
+          <select id="exportMode">
+            <option value="none">None</option>
+            <option value="c">C header (.h)</option>
+            <option value="json">JSON (.json)</option>
+          </select>
+        </div>
+
+        <button id="renderBtn" class="render-btn" disabled>Render</button>
+      </section>
+
+      <!-- Error banner -->
+      <div id="errorBanner" class="error-banner hidden"></div>
+
+      <!-- Results -->
+      <section id="results" class="results hidden">
+        <div id="resultsGrid" class="results-grid"></div>
+      </section>
+
+      <div id="spinner" class="spinner hidden">
+        <div class="spinner-inner"></div>
+        <span>Rendering…</span>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
