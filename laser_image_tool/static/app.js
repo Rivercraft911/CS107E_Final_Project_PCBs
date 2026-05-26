@@ -1,52 +1,54 @@
 "use strict";
 
-const dropzone = document.getElementById("dropzone");
-const fileInput = document.getElementById("fileInput");
-const browseBtn = document.getElementById("browseBtn");
-const dropPrompt = document.getElementById("dropzone-prompt");
-const dropPreview = document.getElementById("dropzone-preview");
-const thumbImg = document.getElementById("thumbImg");
-const imgMeta = document.getElementById("imgMeta");
+const $ = id => document.getElementById(id);
 
-const resPreset = document.getElementById("resPreset");
-const customRes = document.getElementById("customRes");
-const customW = document.getElementById("customW");
-const customH = document.getElementById("customH");
+const dropzone  = $("dropzone");
+const fileInput = $("fileInput");
+const browseBtn = $("browseBtn");
+const changeBtn = $("changeBtn");
+const dzIdle    = $("dzIdle");
+const dzLoaded  = $("dzLoaded");
+const thumbImg  = $("thumbImg");
+const imgMeta   = $("imgMeta");
 
-const colorMode = document.getElementById("colorMode");
-const gammaChk = document.getElementById("gammaChk");
-const ditherChk = document.getElementById("ditherChk");
-const previewScale = document.getElementById("previewScale");
-const scaleVal = document.getElementById("scaleVal");
-const exportMode = document.getElementById("exportMode");
+const resPreset  = $("resPreset");
+const customRes  = $("customRes");
+const customW    = $("customW");
+const customH    = $("customH");
+const colorMode  = $("colorMode");
+const gammaChk   = $("gammaChk");
+const ditherChk  = $("ditherChk");
+const exportMode = $("exportMode");
 
-const renderBtn = document.getElementById("renderBtn");
-const errorBanner = document.getElementById("errorBanner");
-const results = document.getElementById("results");
-const resultsGrid = document.getElementById("resultsGrid");
-const spinner = document.getElementById("spinner");
+const renderBtn   = $("renderBtn");
+const errorBanner = $("errorBanner");
+const emptyState  = $("emptyState");
+const spinner     = $("spinner");
+const resultsWrap = $("resultsWrap");
+const resultsGrid = $("resultsGrid");
 
 let loadedFile = null;
 
-// --- File loading ---
+// ── Pip colors matching CSS pills ──────────────────────────────────────────
+const MODE_PIP = {
+  rgb8:   "#3ecf8e",
+  rgb9:   "#f5c947",
+  rgb64:  "#5baaef",
+  rgb4096:"#b59ef7",
+};
 
-browseBtn.addEventListener("click", () => fileInput.click());
-dropzone.addEventListener("click", (e) => {
-  if (e.target === dropzone || e.target.closest(".dropzone-prompt")) fileInput.click();
-});
+// ── File loading ───────────────────────────────────────────────────────────
 
-fileInput.addEventListener("change", () => {
-  if (fileInput.files[0]) loadFile(fileInput.files[0]);
-});
+browseBtn.addEventListener("click", e => { e.stopPropagation(); fileInput.click(); });
+changeBtn.addEventListener("click", e => { e.stopPropagation(); fileInput.click(); });
+dropzone.addEventListener("click", () => { if (!loadedFile) fileInput.click(); });
+fileInput.addEventListener("change", () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
 
-dropzone.addEventListener("dragover", (e) => {
+dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.classList.add("over"); });
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("over"));
+dropzone.addEventListener("drop", e => {
   e.preventDefault();
-  dropzone.classList.add("drag-over");
-});
-dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag-over"));
-dropzone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropzone.classList.remove("drag-over");
+  dropzone.classList.remove("over");
   const f = e.dataTransfer.files[0];
   if (f) loadFile(f);
 });
@@ -54,28 +56,24 @@ dropzone.addEventListener("drop", (e) => {
 function loadFile(file) {
   loadedFile = file;
   const url = URL.createObjectURL(file);
-  const img = new Image();
-  img.onload = () => {
+  const probe = new Image();
+  probe.onload = () => {
     thumbImg.src = url;
     imgMeta.innerHTML =
       `<strong>${file.name}</strong>` +
-      `${img.naturalWidth} × ${img.naturalHeight} px<br>` +
-      `${(file.size / 1024).toFixed(1)} KB`;
-    dropPrompt.classList.add("hidden");
-    dropPreview.classList.remove("hidden");
+      `${probe.naturalWidth} × ${probe.naturalHeight}&ensp;·&ensp;${(file.size / 1024).toFixed(1)} KB`;
+    dzIdle.classList.add("hidden");
+    dzLoaded.classList.remove("hidden");
     renderBtn.disabled = false;
+    emptyState.classList.add("hidden");
   };
-  img.src = url;
+  probe.src = url;
 }
 
-// --- Resolution preset ---
+// ── Resolution ─────────────────────────────────────────────────────────────
 
 resPreset.addEventListener("change", () => {
-  if (resPreset.value === "custom") {
-    customRes.classList.remove("hidden");
-  } else {
-    customRes.classList.add("hidden");
-  }
+  customRes.classList.toggle("hidden", resPreset.value !== "custom");
 });
 
 function getResolution() {
@@ -86,13 +84,7 @@ function getResolution() {
   return { width: w, height: h };
 }
 
-// --- Preview scale ---
-
-previewScale.addEventListener("input", () => {
-  scaleVal.textContent = previewScale.value + "×";
-});
-
-// --- Render ---
+// ── Render ─────────────────────────────────────────────────────────────────
 
 renderBtn.addEventListener("click", doRender);
 
@@ -100,7 +92,7 @@ async function doRender() {
   if (!loadedFile) return;
 
   hideError();
-  results.classList.add("hidden");
+  resultsWrap.classList.add("hidden");
   spinner.classList.remove("hidden");
   renderBtn.disabled = true;
 
@@ -110,21 +102,16 @@ async function doRender() {
   fd.append("width", width);
   fd.append("height", height);
   fd.append("mode", colorMode.value);
-  fd.append("gamma", gammaChk.checked ? "true" : "false");
+  fd.append("gamma",  gammaChk.checked  ? "true" : "false");
   fd.append("dither", ditherChk.checked ? "true" : "false");
-  fd.append("preview_scale", previewScale.value);
+  fd.append("preview_scale", "1");   // we CSS-scale to fill card width
   fd.append("emit", exportMode.value);
 
   try {
     const resp = await fetch("/api/quantize", { method: "POST", body: fd });
     const data = await resp.json();
-
-    if (!resp.ok) {
-      showError(data.error || "Unknown server error");
-      return;
-    }
-
-    renderResults(data);
+    if (!resp.ok) { showError(data.error || "Server error"); return; }
+    buildCards(data);
   } catch (err) {
     showError("Network error: " + err.message);
   } finally {
@@ -133,94 +120,91 @@ async function doRender() {
   }
 }
 
-function renderResults(items) {
+// ── Build result cards ─────────────────────────────────────────────────────
+
+function buildCards(items) {
   resultsGrid.innerHTML = "";
 
   for (const item of items) {
-    const card = document.createElement("div");
-    card.className = "result-card";
+    const card = make("div", "card");
 
-    // Image
-    const imgWrap = document.createElement("div");
-    imgWrap.className = "card-img-wrap";
-    const img = document.createElement("img");
-    img.src = "data:image/png;base64," + item.preview_png_b64;
+    // ── header ──
+    const hdr = make("div", "card-header");
+    const pip = make("div", "mode-pip");
+    pip.style.background = MODE_PIP[item.mode] ?? "#888";
+
+    const title = make("div", "card-title");
+    title.textContent = item.mode;
+
+    const sub = make("div", "card-sub");
+    sub.textContent = `${item.width} × ${item.height}`;
+
+    hdr.append(pip, title, sub);
+
+    // ── image ──
+    const imgWrap = make("div", "card-img");
+    const img = make("img");
+    img.src = "data:image/png;base64," + item.raw_png_b64;
     img.alt = item.label;
     imgWrap.appendChild(img);
 
-    // Body
-    const body = document.createElement("div");
-    body.className = "card-body";
+    // ── footer ──
+    const foot = make("div", "card-foot");
 
-    const labelDiv = document.createElement("div");
-    labelDiv.className = "card-label";
-    labelDiv.innerHTML =
-      `<strong>${item.mode}</strong>` +
-      `${item.colors} colors · ${item.width}×${item.height}` +
-      (item.gamma ? " · gamma" : "") +
-      (item.dither ? " · dither" : "");
-    body.appendChild(labelDiv);
+    foot.appendChild(pill(item.mode, `pill pill-${item.mode}`));
+    foot.appendChild(pill(`${item.colors} colors`, "pill pill-info"));
+    if (item.gamma)  foot.appendChild(pill("gamma",  "pill pill-active"));
+    if (item.dither) foot.appendChild(pill("dither", "pill pill-active"));
 
-    // Downloads
-    const hasExport = item.data_text !== null;
-    const dlRow = document.createElement("div");
-    dlRow.className = "card-downloads";
-
-    // Always offer raw PNG download
-    const rawBtn = makeDlBtn("PNG", item.raw_png_b64, `image_${item.mode}.png`, "image/png", true);
-    dlRow.appendChild(rawBtn);
-
-    if (hasExport) {
-      const dataBtn = makeDlTextBtn(
-        item.data_filename.endsWith(".h") ? "C header" : "JSON",
-        item.data_text,
-        item.data_filename
-      );
-      dlRow.appendChild(dataBtn);
+    const actions = make("div", "card-actions");
+    actions.appendChild(dlPng(item.raw_png_b64, `laser_${item.mode}.png`));
+    if (item.data_text !== null) {
+      const ext = item.data_filename.endsWith(".h") ? ".h" : "JSON";
+      actions.appendChild(dlText(ext, item.data_text, item.data_filename));
     }
+    foot.appendChild(actions);
 
-    body.appendChild(dlRow);
-    card.appendChild(imgWrap);
-    card.appendChild(body);
+    card.append(hdr, imgWrap, foot);
     resultsGrid.appendChild(card);
   }
 
-  results.classList.remove("hidden");
+  resultsWrap.classList.remove("hidden");
+  // scroll main to top so results are visible
+  document.getElementById("main").scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function makeDlBtn(label, b64, filename, mime, isBase64) {
-  const a = document.createElement("a");
-  a.className = "dl-btn";
-  a.textContent = "↓ " + label;
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function make(tag, cls) {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  return el;
+}
+
+function pill(text, cls) {
+  const el = make("span", cls);
+  el.textContent = text;
+  return el;
+}
+
+function dlPng(b64, filename) {
+  const a = make("a", "dl-btn");
+  a.textContent = "↓ PNG";
   a.download = filename;
-  if (isBase64) {
-    const bytes = atob(b64);
-    const arr = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    const blob = new Blob([arr], { type: mime });
-    a.href = URL.createObjectURL(blob);
-  } else {
-    a.href = b64;
-  }
+  const bytes = atob(b64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  a.href = URL.createObjectURL(new Blob([arr], { type: "image/png" }));
   return a;
 }
 
-function makeDlTextBtn(label, text, filename) {
-  const a = document.createElement("a");
-  a.className = "dl-btn";
+function dlText(label, text, filename) {
+  const a = make("a", "dl-btn");
   a.textContent = "↓ " + label;
   a.download = filename;
-  const blob = new Blob([text], { type: "text/plain" });
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
   return a;
 }
 
-function showError(msg) {
-  errorBanner.textContent = msg;
-  errorBanner.classList.remove("hidden");
-}
-
-function hideError() {
-  errorBanner.textContent = "";
-  errorBanner.classList.add("hidden");
-}
+function showError(msg) { errorBanner.textContent = msg; errorBanner.classList.remove("hidden"); }
+function hideError()    { errorBanner.classList.add("hidden"); }

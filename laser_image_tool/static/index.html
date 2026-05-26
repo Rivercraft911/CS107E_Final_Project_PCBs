@@ -4,117 +4,154 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Laser Image Tool</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <h1>Laser Image Tool</h1>
-      <p class="subtitle">Preview images quantized for the raster laser projector</p>
-    </header>
+  <div class="app">
 
-    <main>
-      <section class="controls-panel">
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-inner">
 
-        <!-- Drop zone -->
-        <div class="control-group">
-          <label class="section-label">Image</label>
-          <div id="dropzone" class="dropzone">
-            <input type="file" id="fileInput" accept="image/*" hidden />
-            <div id="dropzone-prompt" class="dropzone-prompt">
-              <div class="drop-icon">⬆</div>
-              <div>Drop an image or <span class="link" id="browseBtn">click to browse</span></div>
+        <div class="sidebar-head">
+          <div class="brand">
+            <div class="brand-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1L14.5 4.75V11.25L8 15L1.5 11.25V4.75L8 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <circle cx="8" cy="8" r="2" fill="currentColor"/>
+              </svg>
             </div>
-            <div id="dropzone-preview" class="dropzone-preview hidden">
-              <img id="thumbImg" alt="Preview" />
-              <div id="imgMeta" class="img-meta"></div>
+            <div>
+              <div class="brand-title">Laser Image Tool</div>
+              <div class="brand-sub">Quantization Preview</div>
             </div>
           </div>
         </div>
 
-        <!-- Resolution -->
-        <div class="control-group">
-          <label class="section-label" for="resPreset">Resolution</label>
-          <select id="resPreset">
-            <option value="160x120">160 × 120</option>
-            <option value="320x100" selected>320 × 100</option>
-            <option value="128x96">128 × 96</option>
-            <option value="256x144">256 × 144</option>
-            <option value="custom">Custom…</option>
-          </select>
-          <div id="customRes" class="custom-res hidden">
-            <input type="number" id="customW" min="1" max="8192" placeholder="W" value="320" />
-            <span>×</span>
-            <input type="number" id="customH" min="1" max="8192" placeholder="H" value="100" />
-          </div>
-        </div>
+        <div class="sidebar-scroll">
 
-        <!-- Color mode -->
-        <div class="control-group">
-          <label class="section-label" for="colorMode">Color Mode</label>
-          <div class="mode-row">
-            <select id="colorMode">
-              <option value="rgb8">rgb8 — 8 colors</option>
-              <option value="rgb9">rgb9 — 9 colors</option>
-              <option value="rgb64">rgb64 — 64 colors</option>
-              <option value="rgb4096">rgb4096 — 4096 colors</option>
-              <option value="all">All modes (compare)</option>
+          <!-- Upload -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Image</div>
+            <div id="dropzone" class="dropzone">
+              <input type="file" id="fileInput" accept="image/*" hidden />
+              <div id="dzIdle" class="dz-idle">
+                <div class="dz-arrow">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+                <div class="dz-hint">Drop image or <span class="dz-link" id="browseBtn">browse</span></div>
+              </div>
+              <div id="dzLoaded" class="dz-loaded hidden">
+                <img id="thumbImg" alt="" />
+                <div id="imgMeta" class="dz-meta"></div>
+                <button class="dz-change" id="changeBtn">Change</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-sep"></div>
+
+          <!-- Resolution -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Resolution</div>
+            <select id="resPreset" class="ctrl-select">
+              <option value="160x120">160 × 120</option>
+              <option value="320x100" selected>320 × 100</option>
+              <option value="128x96">128 × 96</option>
+              <option value="256x144">256 × 144</option>
+              <option value="custom">Custom…</option>
+            </select>
+            <div id="customRes" class="custom-res hidden">
+              <input type="number" id="customW" min="1" max="8192" value="320" class="ctrl-num" />
+              <span class="dim-sep">×</span>
+              <input type="number" id="customH" min="1" max="8192" value="100" class="ctrl-num" />
+            </div>
+          </div>
+
+          <div class="ctrl-sep"></div>
+
+          <!-- Color mode -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Color Mode</div>
+            <select id="colorMode" class="ctrl-select">
+              <option value="all" selected>All modes — compare</option>
+              <option value="rgb8">rgb8 · 8 colors</option>
+              <option value="rgb9">rgb9 · 9 colors</option>
+              <option value="rgb64">rgb64 · 64 colors</option>
+              <option value="rgb4096">rgb4096 · 4096 colors</option>
             </select>
           </div>
-        </div>
 
-        <!-- Options -->
-        <div class="control-group">
-          <label class="section-label">Options</label>
-          <div class="checkbox-group">
-            <label class="checkbox-label">
+          <div class="ctrl-sep"></div>
+
+          <!-- Processing -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Processing</div>
+            <label class="toggle">
               <input type="checkbox" id="gammaChk" />
-              <span>Gamma-aware (sRGB→linear)</span>
+              <span class="track"><span class="thumb"></span></span>
+              <span class="toggle-text">Gamma-aware</span>
             </label>
-            <label class="checkbox-label">
+            <label class="toggle">
               <input type="checkbox" id="ditherChk" />
-              <span>Floyd-Steinberg dither</span>
+              <span class="track"><span class="thumb"></span></span>
+              <span class="toggle-text">Floyd-Steinberg dither</span>
             </label>
           </div>
-        </div>
 
-        <!-- Preview scale -->
-        <div class="control-group">
-          <label class="section-label" for="previewScale">Preview Scale</label>
-          <div class="scale-row">
-            <input type="range" id="previewScale" min="1" max="16" value="8" />
-            <span id="scaleVal" class="scale-val">8×</span>
+          <div class="ctrl-sep"></div>
+
+          <!-- Export -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Export</div>
+            <select id="exportMode" class="ctrl-select">
+              <option value="none">None</option>
+              <option value="c">C header (.h)</option>
+              <option value="json">JSON (.json)</option>
+            </select>
           </div>
+
+        </div><!-- end sidebar-scroll -->
+
+        <div class="sidebar-foot">
+          <button id="renderBtn" class="render-btn" disabled>
+            <svg class="btn-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="3,1 13,7 3,13" fill="currentColor"/></svg>
+            Render
+          </button>
         </div>
 
-        <!-- Export -->
-        <div class="control-group">
-          <label class="section-label" for="exportMode">Export</label>
-          <select id="exportMode">
-            <option value="none">None</option>
-            <option value="c">C header (.h)</option>
-            <option value="json">JSON (.json)</option>
-          </select>
+      </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="main" id="main">
+
+      <div id="emptyState" class="empty-state">
+        <div class="empty-gfx">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <path d="M24 4L43 15V33L24 44L5 33V15L24 4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" opacity="0.2"/>
+            <circle cx="24" cy="24" r="6" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+            <circle cx="24" cy="24" r="2" fill="currentColor" opacity="0.4"/>
+          </svg>
         </div>
+        <div class="empty-title">No results yet</div>
+        <div class="empty-body">Load an image and click Render to preview quantization modes</div>
+      </div>
 
-        <button id="renderBtn" class="render-btn" disabled>Render</button>
-      </section>
-
-      <!-- Error banner -->
       <div id="errorBanner" class="error-banner hidden"></div>
 
-      <!-- Results -->
-      <section id="results" class="results hidden">
-        <div id="resultsGrid" class="results-grid"></div>
-      </section>
-
       <div id="spinner" class="spinner hidden">
-        <div class="spinner-inner"></div>
+        <div class="spin-ring"></div>
         <span>Rendering…</span>
       </div>
+
+      <div id="resultsWrap" class="results-wrap hidden">
+        <div id="resultsGrid" class="results-grid"></div>
+      </div>
+
     </main>
   </div>
 
-  <script src="app.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>
